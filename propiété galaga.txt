@@ -1,0 +1,37 @@
+Ennemi
+
+paramètres:
+
+vitesse: 
+
+vie: 
+
+taille:
+
+fréquence de tir :
+
+type de tir : 
+
+-1 droit 
+
+-2 droit consécutif avec 2 pixel d'écart 
+
+-2 en diagonales  
+
+-3 2 diagonales et un 1 droit 
+
+
+Joueurs 
+
+vitesse: 
+
+vie: 
+
+taille:
+
+fréquence de tir :
+
+type de tir : 
+
+-1 droit 
+
