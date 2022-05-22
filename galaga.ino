@@ -1,9 +1,9 @@
 #include <Gamebuino-Meta.h>
 
-int ennemies[15][3] = {
-  {17,5,1},{27,5,1},{37,5,1},{47,5,1},{57,5,1},
-  {17,13,1},{27,13,1},{37,13,1},{47,13,1},{57,13,1},
-  {17,21,1},{27,21,1},{37,21,1},{47,21,1},{57,21,1}};
+int ennemies[15][4] = {
+  {17,5,1,30},{27,5,1,30},{37,5,1,30},{47,5,1,30},{57,5,1,30},
+  {17,13,1,20},{27,13,1,20},{37,13,1,20},{47,13,1,20},{57,13,1,20},
+  {17,21,1,10},{27,21,1,10},{37,21,1,10},{47,21,1,10},{57,21,1,10}};
 int ennemi_w = 6;
 int ennemi_h = 4;
 int ennemi_x_move = 1;
@@ -12,6 +12,7 @@ bool all_dead = false;
 int joueur_ship_X_pos1 = gb.display.width()/2-4;
 int joueur_ship_Y_pos1 = gb.display.height()-2;
 int joueur_lives = 2;
+int score_joueur = 0;
 
 int bullet_x_pos = 81;
 int bullet_y_pos = 63;
@@ -42,12 +43,21 @@ void loop() {
   int joueur_ship_Y_pos3 = joueur_ship_Y_pos1-6;
   if(all_dead)
   {
-      gb.display.setCursor(gb.display.width()/2, gb.display.height()/2);
+      gb.display.setCursor(gb.display.width()/4, gb.display.height()/2);
       gb.display.setColor(GREEN);
       gb.display.print("GAME OVER");
+
+      gb.display.setCursor(gb.display.width()/4, gb.display.height()/2 + 10);
+      gb.display.print("SCORE ");
+      gb.display.print(score_joueur);
   }
   else
   {
+    //score de la partie
+    gb.display.setCursor(0,0);
+    gb.display.print("Score : ");
+    gb.display.print(score_joueur);
+
     //création joueur
     gb.display.setColor(WHITE);
     gb.display.fillTriangle(
@@ -66,6 +76,7 @@ void loop() {
         && ennemies[i][2] > 0
         && bullet_exist == 1){
           ennemies[i][2]--;
+          score_joueur = score_joueur + ennemies[i][3];
           bullet_exist = 0;
       }
 
