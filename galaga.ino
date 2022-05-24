@@ -1,35 +1,61 @@
 #include <Gamebuino-Meta.h>
 
-int ennemies[15][4] = {
-  {17,5,1,30},{27,5,1,30},{37,5,1,30},{47,5,1,30},{57,5,1,30},
-  {17,13,1,20},{27,13,1,20},{37,13,1,20},{47,13,1,20},{57,13,1,20},
-  {17,21,1,10},{27,21,1,10},{37,21,1,10},{47,21,1,10},{57,21,1,10}};
-int ennemi_w = 6;
-int ennemi_h = 4;
-int ennemi_x_move = 1;
-bool all_dead = false;
+int game_state = 0;
 
-int joueur_ship_X_pos1 = gb.display.width()/2-4;
-int joueur_ship_Y_pos1 = gb.display.height()-2;
-int joueur_lives = 2;
-int score_joueur = 0;
+#pragma region declare variables
+int score;
+int lives;
 
-int bullet_x_pos = 81;
-int bullet_y_pos = 63;
-int bullet_w = 1;
-int bullet_h = 3;
-int bullet_exist = 0;
-Color bullet_color=BLUE;
+int ennemies[15][4];
+int ennemi_w;
+int ennemi_h;
+int ennemi_x_move;
+bool all_dead;
 
-int bullet_ennemi_x_pos = 81;
-int bullet_ennemi_y_pos = 63;
-int bullet_ennemi_w = 1;
-int bullet_ennemi_h = 3;
-int bullet_ennemi_exist = 0;
-Color bullet_ennemi_color=RED;
+//vaisseau du joueur
 
-int ennemi_alive = 0;
-int joueur_move_speed = 2;
+//corp du vaisseau
+int joueur_ship_X_bl;
+int joueur_ship_Y_bl;
+int joueur_ship_X_br;
+int joueur_ship_Y_br;
+int joueur_ship_X_tm;
+int joueur_ship_Y_tm;
+//aile gauche du vaisseau
+int left_wing_X_bl;
+int left_wing_Y_bl;
+int left_wing_X_tl;
+int left_wing_Y_tl;
+int left_wing_X_bm;
+int left_wing_Y_bm;
+//aile droite du vaisseau
+int right_wing_X_bm;
+int right_wing_Y_bm;
+int right_wing_X_br;
+int right_wing_Y_br;
+int right_wing_X_tr;
+int right_wing_Y_tr;
+  
+//munition joueur
+int bullet_x_pos;
+int bullet_y_pos;
+int bullet_w;
+int bullet_h;
+int bullet_exist;
+Color bullet_color;
+
+//munition ennemie
+int bullet_ennemi_x_pos;
+int bullet_ennemi_y_pos;
+int bullet_ennemi_w;
+int bullet_ennemi_h;
+int bullet_ennemi_exist;
+Color bullet_ennemi_color;
+
+int ennemi_alive;
+int joueur_move_speed;
+
+#pragma endregion
 
 void setup() {
   gb.begin();
@@ -37,36 +63,165 @@ void setup() {
 void loop() {
   while(!gb.update());
   gb.display.clear();
-  int ennemi_alive = 0;
-  //propiétés relative du joueur
-  int joueur_ship_X_pos2 = joueur_ship_X_pos1+8;
-  int joueur_ship_Y_pos2 = joueur_ship_Y_pos1;
-  int joueur_ship_X_pos3 = joueur_ship_X_pos1+4;
-  int joueur_ship_Y_pos3 = joueur_ship_Y_pos1-6;
-  if(all_dead)
-  {
-      gb.display.setCursor(gb.display.width()/4, gb.display.height()/2);
-      gb.display.setColor(GREEN);
-      gb.display.print("GAME OVER");
 
-      gb.display.setCursor(gb.display.width()/4, gb.display.height()/2 + 10);
-      gb.display.print("SCORE ");
-      gb.display.print(score_joueur);
+  switch(game_state)
+  {
+    case 0:
+      showTitle();
+      break;
+    case 1:
+      setStartValues();
+      startgame();
+      break;
+    case 2:
+      startgame();
+      break;
+    case 3:
+      showEndScreen();
+      break;
+  }
+}
+
+void showTitle(){
+  gb.display.setColor(WHITE);
+  gb.display.cursorX = 0;
+  gb.display.cursorY = 0;
+  gb.display.print("  Last score : ");
+  gb.display.print(score);
+
+  gb.display.setColor(RED);
+  gb.display.cursorX = 30;
+  gb.display.cursorY = 28;
+  gb.display.print("GALAGA");
+
+  gb.display.setColor(WHITE);
+  gb.display.cursorX = 0;
+  gb.display.cursorY = 56;
+  gb.display.print(" A:PLAY   B:QUIT");
+
+  if(gb.buttons.pressed(BUTTON_A)){
+    game_state = 1;
+  }
+  if(gb.buttons.pressed(BUTTON_B)){
+    //kill the process
+  }
+}
+
+void setStartValues(){
+  score = 0;
+  lives = 3;
+
+  //vaisseaux ennemis
+  int x = 17;
+  int y = 5;
+  int life = 1;
+  int pts = 30;
+
+  // ligne du haut
+  for(int i = 0; i < 5; i++){
+    ennemies[i][0] = x;
+    ennemies[i][1] = y;
+    ennemies[i][2] = life;
+    ennemies[i][3] = pts;
+    
+    x = x + 10;
+  }
+
+  //ligne du milieu
+  x = 17;
+  y = 13;
+  pts = 20;
+  for(int i = 5; i < 10; i++){
+    ennemies[i][0] = x;
+    ennemies[i][1] = y;
+    ennemies[i][2] = life;
+    ennemies[i][3] = pts;
+
+    x = x + 10;
+  }
+
+  //ligne du bas
+  x = 17;
+  y = 21;
+  pts = 10;
+  for(int i = 10; i < 15; i++){
+    ennemies[i][0] = x;
+    ennemies[i][1] = y;
+    ennemies[i][2] = life;
+    ennemies[i][3] = pts;
+
+    x = x + 10;
+  }
+  
+  ennemi_w = 6;
+  ennemi_h = 4;
+  ennemi_x_move = 1;
+  all_dead = false;
+
+  //vaisseau du joueur
+
+  //corp du vaisseau
+  joueur_ship_X_bl = gb.display.width()/2-1;
+  joueur_ship_Y_bl = gb.display.height()-2;
+  joueur_ship_X_br = joueur_ship_X_bl+4;
+  joueur_ship_Y_br = joueur_ship_Y_bl;
+  joueur_ship_X_tm = joueur_ship_X_bl+2;
+  joueur_ship_Y_tm = joueur_ship_Y_bl-4;
+  //aile gauche du vaisseau
+  left_wing_X_bl = joueur_ship_X_bl-2;
+  left_wing_Y_bl = joueur_ship_Y_bl;
+  left_wing_X_tl = left_wing_X_bl;
+  left_wing_Y_tl = joueur_ship_Y_tm;
+  left_wing_X_bm = joueur_ship_X_tm;
+  left_wing_Y_bm = left_wing_Y_bl;
+  //aile droite du vaisseau
+  right_wing_X_bm = left_wing_X_bm;
+  right_wing_Y_bm = left_wing_Y_bm;
+  right_wing_X_br = right_wing_X_bm+4;
+  right_wing_Y_br = left_wing_Y_tl;
+  right_wing_X_tr = right_wing_X_br;
+  right_wing_Y_tr = left_wing_Y_bm;
+    
+  //munition joueur
+  bullet_x_pos = 81;
+  bullet_y_pos = 63;
+  bullet_w = 1;
+  bullet_h = 3;
+  bullet_exist = 0;
+  bullet_color=BLUE;
+
+  //munition ennemie
+  bullet_ennemi_x_pos = 81;
+  bullet_ennemi_y_pos = 63;
+  bullet_ennemi_w = 1;
+  bullet_ennemi_h = 3;
+  bullet_ennemi_exist = 0;
+  bullet_ennemi_color=RED;
+
+  ennemi_alive = 0;
+  joueur_move_speed = 2;
+}
+
+void startgame(){
+
+  game_state = 2;
+  int ennemi_alive = 0;
+
+  if(all_dead || lives == 0)
+  {
+      game_state = 3;
   }
   else
   {
     //score de la partie
     gb.display.setCursor(0,0);
-    gb.display.print("Score : ");
-    gb.display.print(score_joueur);
+    gb.display.print("Score: ");
+    gb.display.print(score);
+    gb.display.print("  live: ");
+    gb.display.print(lives);
 
-    //création joueur
-    gb.display.setColor(WHITE);
-    gb.display.fillTriangle(
-      joueur_ship_X_pos1, joueur_ship_Y_pos1,
-      joueur_ship_X_pos2, joueur_ship_Y_pos2,
-      joueur_ship_X_pos3, joueur_ship_Y_pos3);
-
+    createJoueur();
+    
     //création ennemis
     for(int i=0; i < 15; i++){
       if(i < 5){gb.display.setColor(RED);}
@@ -78,20 +233,17 @@ void loop() {
         && ennemies[i][2] > 0
         && bullet_exist == 1){
           ennemies[i][2]--;
-          score_joueur = score_joueur + ennemies[i][3];
+          score = score + ennemies[i][3];
           bullet_exist = 0;
       }
 
-      //hit du projectile ennemi sur le joueur
-      if(gb.collideRectRect(bullet_ennemi_x_pos, bullet_ennemi_y_pos, bullet_ennemi_w, bullet_ennemi_h, joueur_ship_X_pos1, joueur_ship_Y_pos1, ennemi_w, ennemi_h)
-        && ennemies[i][2] > 0
-        && bullet_exist == 1){
-          ennemies[i][2]--;
-          score_joueur = score_joueur + ennemies[i][3];
+      //hit du projectil ennemi sur le joueur
+      if(gb.collideRectRect(bullet_ennemi_x_pos, bullet_ennemi_y_pos, bullet_ennemi_w, bullet_ennemi_h, left_wing_X_tl, left_wing_Y_tl, (right_wing_X_br - left_wing_X_bl), (left_wing_Y_bl - left_wing_X_tl))
+        && lives > 0
+        && bullet_ennemi_exist == 1){
+          lives--;
           bullet_ennemi_exist = 0;
       }
-
-      
 
       //si l'ennemi a encore des pv => all_dead est faux, on ajoute un au nombre d'ennemi en vie et on crée le rectangle qui représente l'ennemi
       if(ennemies[i][2] > 0){
@@ -111,25 +263,26 @@ void loop() {
       //selection de l'ennemi qui tir 
     if(bullet_ennemi_exist == 0)
     {
-      int shooter_ennemi = random(0,ennemi_alive);
+      int shooter_ennemi = random(ennemi_alive);
       int selected_ennemi = 0;
-      while(shooter_ennemi != 0) {
-        if(ennemies[selected_ennemi][2] > 0)
+      for(int i = 0; i < 15; i++){
+        if(ennemies[i][2] > 0 && shooter_ennemi == 0)
+        {
+          bullet_ennemi_x_pos = ennemies[selected_ennemi][0]+ennemi_w/2;
+          bullet_ennemi_y_pos = ennemies[selected_ennemi][1]+ennemi_h;
+          bullet_ennemi_exist = 1;
+          break;
+        }
+        else if(ennemies[i][2] > 0 && shooter_ennemi != 0)
         {
           shooter_ennemi--;
-          selected_ennemi++;
         }
-        else{selected_ennemi++;
       }
-      
       bullet_ennemi_x_pos = ennemies[selected_ennemi][0]+ennemi_w/2;
       bullet_ennemi_y_pos = ennemies[selected_ennemi][1]+ennemi_h;
       bullet_ennemi_exist = 1;
     }
-    }
-    
-    
-    
+
     all_dead = true;
     for(int i=0; i < 15; i++){
       if(ennemies[i][2] > 0){
@@ -140,13 +293,13 @@ void loop() {
 
     //Deplacement joueur
     if(gb.buttons.repeat(BUTTON_RIGHT, 0)){
-      if((joueur_ship_X_pos2 + joueur_move_speed) < gb.display.width()){
-        joueur_ship_X_pos1 = joueur_ship_X_pos1 + joueur_move_speed;
+      if((right_wing_X_br + joueur_move_speed) < gb.display.width()){
+        joueur_ship_X_bl = joueur_ship_X_bl + joueur_move_speed;
       }
     }
     if(gb.buttons.repeat(BUTTON_LEFT, 0)){
-      if(joueur_ship_X_pos1 != 0){
-        joueur_ship_X_pos1 = joueur_ship_X_pos1 - joueur_move_speed;
+      if(left_wing_X_bl > 0){
+        joueur_ship_X_bl = joueur_ship_X_bl - joueur_move_speed;
       }
     }
 
@@ -174,12 +327,72 @@ void loop() {
 
     //Action de tir du joueur
     if(gb.buttons.pressed(BUTTON_A) && bullet_exist == 0){
-        bullet_x_pos = joueur_ship_X_pos3;
-        bullet_y_pos = joueur_ship_Y_pos3;
+        bullet_x_pos = joueur_ship_X_tm;
+        bullet_y_pos = joueur_ship_Y_tm;
         bullet_exist = 1;
         gb.display.setColor(bullet_color);
         gb.display.fillRect(bullet_x_pos, bullet_y_pos, bullet_w,bullet_h);
     }
   }
+}
 
+void showEndScreen(){
+  gb.display.setCursor(gb.display.width()/4, gb.display.height()/4);
+  gb.display.setColor(GREEN);
+  gb.display.print("GAME OVER");
+
+  gb.display.setCursor(gb.display.width()/4, gb.display.height()/4 + 10);
+  gb.display.print("SCORE ");
+  gb.display.print(score);
+
+  gb.display.setColor(WHITE);
+  gb.display.cursorX = 0;
+  gb.display.cursorY = 56;
+  gb.display.print("A:REPLAY  B:TITLE");
+
+  if(gb.buttons.pressed(BUTTON_A)){
+    game_state = 1;
+  }
+  if(gb.buttons.pressed(BUTTON_B)){
+    game_state = 0;
+  }
+}
+
+void createJoueur(){
+
+  //valeur relatives du vaisseau du joueur
+    
+  //corp du vaisseau
+  joueur_ship_X_br = joueur_ship_X_bl+4;
+  joueur_ship_Y_br = joueur_ship_Y_bl;
+  joueur_ship_X_tm = joueur_ship_X_bl+2;
+  joueur_ship_Y_tm = joueur_ship_Y_bl-4;
+  //aile gauche du vaisseau
+  left_wing_X_bl = joueur_ship_X_bl-2;
+  left_wing_Y_bl = joueur_ship_Y_bl;
+  left_wing_X_tl = left_wing_X_bl;
+  left_wing_Y_tl = joueur_ship_Y_tm;
+  left_wing_X_bm = joueur_ship_X_tm;
+  left_wing_Y_bm = left_wing_Y_bl;
+  //aile droite du vaisseau
+  right_wing_X_bm = left_wing_X_bm;
+  right_wing_Y_bm = left_wing_Y_bm;
+  right_wing_X_br = left_wing_X_bm+4;
+  right_wing_Y_br = left_wing_Y_tl;
+  right_wing_X_tr = right_wing_X_br;
+  right_wing_Y_tr = left_wing_Y_bm;
+  
+  gb.display.setColor(WHITE);
+  gb.display.fillTriangle(
+    joueur_ship_X_bl, joueur_ship_Y_bl,
+    joueur_ship_X_br, joueur_ship_Y_br,
+    joueur_ship_X_tm, joueur_ship_Y_tm);
+  gb.display.fillTriangle(
+    left_wing_X_bl, left_wing_Y_bl,
+    left_wing_X_tl, left_wing_Y_tl,
+    left_wing_X_bm, left_wing_Y_bm);
+  gb.display.fillTriangle(
+    right_wing_X_bm, right_wing_Y_bm,
+    right_wing_X_br, right_wing_Y_br,
+    right_wing_X_tr, right_wing_Y_tr);
 }
