@@ -245,14 +245,12 @@ void startgame(){
           bullet_ennemi_exist = 0;
       }
 
-      //si l'ennemi a encore des pv => all_dead est faux, on ajoute un au nombre d'ennemi en vie et on crée le rectangle qui représente l'ennemi
       if(ennemies[i][2] > 0){
         all_dead = false;
         ennemi_alive++;
         gb.display.fillRect(ennemies[i][0], ennemies[i][1], ennemi_w, ennemi_h);
       }
       
-      //si l'ennemi est en vie et touche un bord de l'ecran on change le sens de déplacement
       if(((ennemies[i][0] + ennemi_w) >= gb.display.width() && ennemies[i][2] > 0) 
         || (ennemies[i][0] <= 0 && ennemies[i][2] > 0)){
         ennemi_x_move = -ennemi_x_move;
@@ -264,12 +262,11 @@ void startgame(){
     if(bullet_ennemi_exist == 0)
     {
       int shooter_ennemi = random(ennemi_alive);
-      int selected_ennemi = 0;
       for(int i = 0; i < 15; i++){
         if(ennemies[i][2] > 0 && shooter_ennemi == 0)
         {
-          bullet_ennemi_x_pos = ennemies[selected_ennemi][0]+ennemi_w/2;
-          bullet_ennemi_y_pos = ennemies[selected_ennemi][1]+ennemi_h;
+          bullet_ennemi_x_pos = ennemies[i][0]+ennemi_w/2;
+          bullet_ennemi_y_pos = ennemies[i][1]+ennemi_h;
           bullet_ennemi_exist = 1;
           break;
         }
@@ -278,9 +275,6 @@ void startgame(){
           shooter_ennemi--;
         }
       }
-      bullet_ennemi_x_pos = ennemies[selected_ennemi][0]+ennemi_w/2;
-      bullet_ennemi_y_pos = ennemies[selected_ennemi][1]+ennemi_h;
-      bullet_ennemi_exist = 1;
     }
 
     all_dead = true;
